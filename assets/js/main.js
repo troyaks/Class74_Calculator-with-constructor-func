@@ -20,6 +20,7 @@ document.addEventListener('keyup', function (event) {
     if (event.key === 'Enter' || event.key === '=') {
         let result = calc.calculate(matrix);
         calc.show(result);
+        calc.refresh(result);
     }
 })
 
@@ -145,18 +146,21 @@ function Calculator() {
                 rowJ++;
             }
         }
-        return elementArray.toString().replace(/,*/gm, ''); 
-        /* Above statement is to turn the matrix of input values into 
-        a string, replace all `,` by '' (nothingness) 
-        which means deleting it and then return it. */
+        return elementArray;
     }
 
     this.show = (showVal) => {
-        calc.display.innerHTML = `${showVal}`;
+        calc.display.innerHTML = `${showVal.toString().replace(/,*/gm, '')}`;
     }
 
-    this.calculate = (tmpMat) => {
-        tmpMat = eval(tmpMat);
-        return tmpMat;
+    this.calculate = (calcVal) => {
+        return eval(calcVal.toString().replace(/,*/gm, ''));
+    }
+
+    this.refresh = (refreshVal) => {
+        rowI = 0; rowJ = 0;
+        elementArray.length = 0;
+        elementArray[rowI] = refreshVal;
+        rowJ++;
     }
 }
