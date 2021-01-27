@@ -2,38 +2,47 @@
 -------------- Main Code -----------------
 --------------------------------------- */
 
-// Initialize the constructor function and assign it.
+// Initialize the constructor function and assign it to a variable.
 const calc = new Calculator;
 // Initialize display
 calc.setDisplay();
 // Listen to entry events.
-document.addEventListener('keyup', function (event) {
-    if ((event.key >= 0 && event.key <= 9) || event.key === '.'
-        || event.key === ',' || event.key === '/' || event.key === '*' || event.key === '-'
-        || event.key === '+' || event.key === '^' || event.key === '(' || event.key === ')') {
-        calc.fillArray(event);
+document.addEventListener('keyup', handleEventListener); //Listen to keyup events and handle it.
+document.addEventListener('click', handleEventListener); //Listen to click events and handle it.
+
+/* ---------------------------------------
+-------------- Functions -----------------
+--------------------------------------- */
+
+function handleEventListener(event) {
+    let ev;
+    if (typeof event.key === 'undefined') {
+        ev = event.target.id;
+    } else {
+        ev = event.key;
+    }
+    if ((ev >= 0 && ev <= 9) || ev === '.'
+        || ev === ',' || ev === '/' || ev === '*' || ev === '-'
+        || ev === '+' || ev === '^' || ev === '(' || ev === ')') {
+        calc.fillArray(ev);
         let array = calc.getArray();
         calc.setDisplay(array);
     }
-    if (event.key === 'Enter' || event.key === '=') {
+    if (ev === 'Enter' || ev === '=') {
         let result = calc.calculate();
         let array = calc.getArray();
         calc.save(array);
         calc.setDisplay(result);
         calc.refresh(result);
     }
-    if (event.key === 'Escape') {
+    if (ev === 'Escape') {
         calc.setDisplay();
         calc.refresh();
     }
-})
-
-/* ---------------------------------------
--------------- Functions -----------------
---------------------------------------- */
+}
 
 function Calculator() {
-    let [rowI, rowJ, parenthIsLast, operatorIsLast, 
+    let [rowI, rowJ, parenthIsLast, operatorIsLast,
         checkParenth, checkNumAftrParenth, checkNumAftNum, lastEntryIsFnc] = clear(true);
     let elementArray = []; let tempArray = [];
     this.display = document.querySelector('.display');
@@ -62,7 +71,7 @@ function Calculator() {
     }
 
     this.refresh = (refreshVal) => {
-        [rowI, rowJ, parenthIsLast, operatorIsLast, 
+        [rowI, rowJ, parenthIsLast, operatorIsLast,
             checkParenth, checkNumAftrParenth, checkNumAftNum, lastEntryIsFnc] = clear(false);
         elementArray.length = 0;
         if (typeof refreshVal === 'undefined') {
@@ -78,20 +87,20 @@ function Calculator() {
         return elementArray;
     }
 
-    this.fillArray = (e) => {
-        if (typeof e === 'undefined') {
+    this.fillArray = (evfnc) => {
+        if (typeof evfnc === 'undefined') {
             return elementArray;
         }
         if (!elementArray[rowI]) {
             elementArray[rowI] = [];
         }
-        if ((e.key >= 0 && e.key <= 9) || (e.key === '.' || e.key === ',')) {
-            console.log(`Listened to number ${e.key} key pressed`);
+        if ((evfnc >= 0 && evfnc <= 9) || (evfnc === '.' || evfnc === ',')) {
+            console.log(`Listened to number ${evfnc} key pressed`);
             checkID = 0;
             if (checkParenth != 0 && checkNumAftrParenth === 0 && checkNumAftNum === 0 && checkID === 0) {
                 /* Check if a parenthesis has been added AND there is no number entry
                 after the parenthesis AND there is no number after a number */
-                add(e.key);
+                add(evfnc);
                 operatorIsLast = 0;
                 checkNumAftrParenth = 1;
                 checkNumAftNum = 1;
@@ -99,11 +108,11 @@ function Calculator() {
                 checkID = 1;
                 console.log(`A parenthesis has been added AND there is no number entry after the parenthesis AND there is no number after a number`);
             }
-            if ((operatorIsLast === 1 && !(e.key === '.' || e.key === ',') && checkID === 0)) {
+            if ((operatorIsLast === 1 && !(evfnc === '.' || evfnc === ',') && checkID === 0)) {
                 /* Check if the last entry is not an operator AND
                 check if the current entry is not '.' NOR ',' */
                 newColumn();
-                add(e.key);
+                add(evfnc);
                 operatorIsLast = 0;
                 checkNumAftrParenth = 1;
                 checkNumAftNum = 1;
@@ -120,31 +129,35 @@ function Calculator() {
                     checkNumAftrParenth = 1;
                     console.log(checkNumAftrParenth);
                 }
-                if (e.key === '.') {
+                if (evfnc === '.') {
                     // In case the key entered is '.' change to ','
                     add(`,`);
                 } else {
-                    add(e.key);
+                    add(evfnc);
                 }
             }
         }
-        if ((e.key === '/' || e.key === '*' || e.key === '-' || e.key === '+' || e.key === '^') &&
+        if ((evfnc === '/' || evfnc === '*' || evfnc === '-' || evfnc === '+' || evfnc === '^') &&
             (checkNumAftrParenth === 1)) {
-            console.log(`Listened to operator ${e.key} key pressed`);
+            console.log(`Listened to operator ${evfnc} key pressed`);
+            tempKey = evfnc;
+            if (evfnc === '^') {
+                tempKey = '**';
+            }
             if (operatorIsLast === 0) {
                 /* In case last entry is not an operator */
                 console.log(`Last entry is not an operator`);
                 newColumn();
-                add(e.key, 'overwrite');
+                add(tempKey, 'overwrite');
                 operatorIsLast = 1;
             }
             else {
                 console.log(`Last entry is an operator. Overwrite is done.`);
-                add(e.key, 'overwrite');
+                add(tempKey, 'overwrite');
             }
         }
-        if (e.key === '(') {
-            console.log(`Listened to operator ${e.key} key pressed`);
+        if (evfnc === '(') {
+            console.log(`Listened to operator ${evfnc} key pressed`);
             checkNumAftrParenth = 0;
             checkNumAftNum = 0;
             if (operatorIsLast === 0 && parenthIsLast === 0) {
@@ -153,7 +166,7 @@ function Calculator() {
                 newColumn();
                 add('*');
                 newColumn();
-                add(e.key);
+                add(evfnc);
                 newColumn();
                 parenthIsLast = 1;
                 checkParenth++;
@@ -161,7 +174,7 @@ function Calculator() {
             else {
                 if (parenthIsLast === 1) {
                     /* In case the last entry is a parenthesis */
-                    add(e.key);
+                    add(evfnc);
                     newColumn();
                     checkParenth++;
                 }
@@ -169,19 +182,19 @@ function Calculator() {
                     /* In case there has been added a parenthesis
                     but it is not the last entry */
                     newColumn();
-                    add(e.key);
+                    add(evfnc);
                     newColumn();
                     checkParenth++;
                 }
             }
         }
-        if (e.key === ')' && operatorIsLast === 0 && checkParenth != 0) {
+        if (evfnc === ')' && operatorIsLast === 0 && checkParenth != 0) {
             /* Check if ')' is pressed (AND) if the previous entry
             is not an operator (AND) if an '(' has been used */
             console.log(`Listened to operator ')' key pressed AND the previous entry
             is not an operator AND an '(' has been already added`)
             newColumn();
-            add(e.key);
+            add(evfnc);
             checkParenth--;
         }
         function newColumn() {
@@ -210,9 +223,9 @@ function Calculator() {
 
     function clear(clearBool) {
         if (clearBool) {
-            return [0,0,0,0,0,-1,1,0];
+            return [0, 0, 0, 0, 0, -1, 1, 0];
         } else {
-            return [0,0,0,0,1,1,1,0];
+            return [0, 0, 0, 0, 1, 1, 1, 0];
         }
     }
 }
